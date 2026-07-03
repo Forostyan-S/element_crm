@@ -1,0 +1,11 @@
+export { SettingsPage } from './SettingsPage';
+export { TelegramSettingsPage } from './TelegramSettingsPage';
+export { WarehouseSettingsPage } from './WarehouseSettingsPage';
+export { ProfileSettingsPage } from './ProfileSettingsPage';
+export { ServiceCatalogPage } from './ServiceCatalogPage';
+export { MaterialCatalogPage } from './MaterialCatalogPage';
+export { FinanceCategoriesPage } from './FinanceCategoriesPage';
+export { EventTypesPage } from './EventTypesPage';
+export { ExportDataPage } from './ExportDataPage';
+export { BackupPage } from './BackupPage';
+export { DangerZonePage } from './DangerZonePage';
