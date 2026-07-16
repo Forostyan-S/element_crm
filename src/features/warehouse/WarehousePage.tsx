@@ -1,25 +1,19 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import {
   Package,
   Plus,
   Search,
-  TrendingUp,
-  TrendingDown,
   ShoppingCart,
-  ArrowLeftRight,
   AlertTriangle,
   Check,
   Clock,
   Truck,
   Archive,
-  X,
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { EmptyState } from '../../ui';
-import { zIndex } from '../../utils/zIndex';
-import type { Material, WarehouseOperation, Purchase } from '../../types';
-import { OPERATION_TYPE_LABELS, PURCHASE_STATUS_LABELS, PURCHASE_STATUS_COLORS } from '../../types';
+import type { Material, Purchase } from '../../types';
 
 // Material Categories
 export const MATERIAL_CATEGORIES = [
@@ -120,35 +114,6 @@ const demoMaterials: Material[] = [
   },
 ];
 
-const demoOperations: WarehouseOperation[] = [
-  {
-    id: '1',
-    material_id: '1',
-    operation_type: 'receipt',
-    quantity: 500,
-    notes: 'Закупка у поставщика Электро-М',
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '2',
-    material_id: '1',
-    operation_type: 'writeoff',
-    quantity: 50,
-    object_id: '1',
-    notes: 'Квартира Иванов',
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-  },
-  {
-    id: '3',
-    material_id: '4',
-    operation_type: 'writeoff',
-    quantity: 5,
-    object_id: '2',
-    notes: 'Дом Петровых',
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-  },
-];
-
 const demoPurchases: Purchase[] = [
   {
     id: '1',
@@ -182,11 +147,10 @@ const demoPurchases: Purchase[] = [
   },
 ];
 
-type TabId = 'stocks' | 'operations' | 'purchases';
+type TabId = 'stocks' | 'purchases';
 
 const tabs: Array<{ id: TabId; label: string; icon: typeof Package }> = [
   { id: 'stocks', label: 'Остатки', icon: Package },
-  { id: 'operations', label: 'Движение', icon: ArrowLeftRight },
   { id: 'purchases', label: 'Закупки', icon: ShoppingCart },
 ];
 
@@ -208,20 +172,15 @@ const fmt = (v: number) =>
 const numFmt = (v: number) => new Intl.NumberFormat('ru-RU').format(v);
 
 export function WarehousePage() {
-  const { materials, warehouseOperations, purchases, setFormPage } = useStore();
+  const { materials, purchases, setFormPage } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>('stocks');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const displayMaterials = materials.length > 0 ? materials : demoMaterials;
-  const displayOperations = warehouseOperations.length > 0 ? warehouseOperations : demoOperations;
   const displayPurchases = purchases.length > 0 ? purchases : demoPurchases;
 
   const lowStockMaterials = displayMaterials.filter((m) => m.current_stock <= m.min_stock);
-  const totalStockValue = displayMaterials.reduce(
-    (sum, m) => sum + m.current_stock * m.purchase_price,
-    0
-  );
 
   const categories = [...new Set(displayMaterials.map((m) => m.category))];
 
@@ -233,11 +192,6 @@ export function WarehousePage() {
     const matchesCategory = categoryFilter === 'all' || m.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
-
-  const getMaterialName = (id: string) => {
-    const m = displayMaterials.find((mat) => mat.id === id);
-    return m?.name || 'Неизвестный материал';
-  };
 
   const getCategoryColor = (categoryName: string) => {
     const cat = MATERIAL_CATEGORIES.find(c => categoryName.toLowerCase().includes(c.label.toLowerCase()));
@@ -251,26 +205,19 @@ export function WarehousePage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 px-4 mb-4">
-        <motion.div
-          className="rounded-card p-3 relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.1) 0%, #1B2130 100%)',
-            border: '1px solid rgba(59,130,246,0.2)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-          }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+      <div className="px-4 mb-4 flex justify-end">
+        <button
+          onClick={() => setFormPage({ type: 'addMaterial' })}
+          className="inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-white"
+          style={{ background: '#3B82F6', boxShadow: '0 6px 18px rgba(59,130,246,0.28)' }}
         >
-          <div className="w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center mb-2">
-            <Package className="w-4 h-4 text-accent" />
-          </div>
-          <p className="text-2xs text-muted-weak">На складе</p>
-          <p className="text-base font-bold text-foreground">{fmt(totalStockValue)}</p>
-          <p className="text-2xs text-muted-weak">{displayMaterials.length} поз.</p>
-        </motion.div>
+          <Plus className="w-4 h-4" />
+          Добавить позицию
+        </button>
+      </div>
 
+      {/* Low-stock notice */}
+      <div className="px-4 mb-4">
         <motion.div
           className="rounded-card p-3 relative overflow-hidden"
           style={{
@@ -437,77 +384,6 @@ export function WarehousePage() {
           ) : (
             <EmptyState icon={Package} title="Нет материалов" description="Добавьте материалы на склад" action={{ label: 'Добавить материал', onClick: () => setFormPage({ type: 'addMaterial' }) }} />
           )}
-        </div>
-      )}
-
-      {/* OPERATIONS TAB */}
-      {activeTab === 'operations' && (
-        <div className="px-4">
-          {/* Operations Type Filter */}
-          <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
-            {(['all', 'receipt', 'writeoff', 'return'] as const).map((type) => (
-              <button
-                key={type}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  type === 'all'
-                    ? 'bg-accent/20 text-accent border border-accent/30'
-                    : 'bg-card-elevated text-muted-weak hover:text-foreground'
-                }`}
-              >
-                {type === 'all' ? 'Все' : OPERATION_TYPE_LABELS[type]}
-              </button>
-            ))}
-          </div>
-
-          {/* Operations List */}
-          <div className="space-y-2">
-            {displayOperations.map((op, index) => {
-              const isReceipt = op.operation_type === 'receipt' || op.operation_type === 'return';
-              const opColor = isReceipt ? '#22C55E' : '#EF4444';
-              const OpIcon = isReceipt ? TrendingUp : TrendingDown;
-
-              return (
-                <motion.div
-                  key={op.id}
-                  className="rounded-card p-3"
-                  style={{
-                    background: '#1B2130',
-                    border: `1px solid ${opColor}20`,
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-                  }}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${opColor}15` }}
-                    >
-                      <OpIcon className="w-5 h-5" style={{ color: opColor }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">
-                        {OPERATION_TYPE_LABELS[op.operation_type]}
-                      </p>
-                      <p className="text-xs text-muted-weak truncate">
-                        {getMaterialName(op.material_id)} •{' '}
-                        {new Date(op.created_at).toLocaleDateString('ru-RU')}
-                      </p>
-                      {op.notes && (
-                        <p className="text-xs text-muted truncate">{op.notes}</p>
-                      )}
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-base font-bold" style={{ color: opColor }}>
-                        {isReceipt ? '+' : '-'}{numFmt(op.quantity)}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
       )}
 

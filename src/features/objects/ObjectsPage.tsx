@@ -1,101 +1,42 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Building2, Search, ArrowUpDown, TrendingUp, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Building2, Search, ArrowUpDown, Wallet, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useStore } from '../../store';
 import { EmptyState } from '../../ui';
 import { StatusFilter } from './StatusFilter';
 import { ObjectCard } from './ObjectCard';
+import { calculateObjectFinancials } from './objectFinancials';
 import type { ObjectStatus, ConstructionObject } from '../../types';
 
-const demoObjects: ConstructionObject[] = [
-  {
-    id: '1',
-    name: 'Квартира Иванов',
-    client_id: '1',
-    address: 'ул. Ленина, 15, кв. 42',
-    status: 'in_progress',
-    budget: 450000,
-    spent: 180000,
-    profit: 120000,
-    progress: 75,
-    image_url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Дом Петровых',
-    client_id: '2',
-    address: 'ул. Садовая, 8',
-    status: 'measurement',
-    budget: 1200000,
-    spent: 0,
-    profit: 0,
-    progress: 20,
-    image_url: 'https://images.pexels.com/photos/1390142/pexels-photo-1390142.jpeg?auto=compress&cs=tinysrgb&w=400',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Офис "Технополис"',
-    client_id: '3',
-    address: 'пр. Мира, 25, офис 301',
-    status: 'completed',
-    budget: 780000,
-    spent: 520000,
-    profit: 260000,
-    progress: 100,
-    image_url: 'https://images.pexels.com/photos/380769/pexels-photo-380769.jpeg?auto=compress&cs=tinysrgb&w=400',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Дача Сидорова',
-    client_id: '4',
-    address: 'пос. Лесной, ул. Полевая, 3',
-    status: 'estimate',
-    budget: 320000,
-    spent: 0,
-    profit: 0,
-    progress: 35,
-    image_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=400',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
-type SortOption = 'new' | 'profitable' | 'active' | 'completed';
+type SortOption = 'new' | 'cost' | 'active' | 'completed';
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string; icon: typeof Clock }> = [
   { value: 'new', label: 'Новые', icon: Clock },
-  { value: 'profitable', label: 'Прибыльные', icon: TrendingUp },
+  { value: 'cost', label: 'По стоимости', icon: Wallet },
   { value: 'active', label: 'Активные', icon: AlertTriangle },
   { value: 'completed', label: 'Завершенные', icon: CheckCircle },
 ];
 
 export function ObjectsPage() {
-  const { objects, setObjectStatusFilter, setFormPage, setSelectedObjectId } = useStore();
-  const [filter, setFilter] = useState<string | 'all'>('all');
+  const { objects, transactions, objectWorkItems, objectMaterialItems, setObjectStatusFilter, setFormPage, setSelectedObjectId } = useStore();
+  const [filter, setFilter] = useState<ObjectStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('new');
   const [showSortMenu, setShowSortMenu] = useState(false);
 
-  const displayObjects = objects.length > 0 ? objects : demoObjects;
-
-  const filteredObjects = displayObjects.filter((obj) => {
+  const filteredObjects = objects.filter((obj) => {
     const matchesFilter = filter === 'all' || obj.status === filter;
-    const matchesSearch = !searchQuery ||
-      obj.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      obj.address.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = !query || [obj.name, obj.address, obj.object_number, obj.client?.name, obj.client?.phone]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(query));
     return matchesFilter && matchesSearch;
   });
 
   const sortedObjects = [...filteredObjects].sort((a, b) => {
     switch (sortBy) {
-      case 'profitable':
-        return b.profit - a.profit;
+      case 'cost':
+        return (b.total_cost ?? b.budget) - (a.total_cost ?? a.budget);
       case 'new':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case 'active':
@@ -109,12 +50,25 @@ export function ObjectsPage() {
     }
   });
 
-  const handleFilterChange = (newFilter: string | 'all') => {
+  const handleFilterChange = (newFilter: ObjectStatus | 'all') => {
     setFilter(newFilter);
-    setObjectStatusFilter(newFilter as ObjectStatus | 'all');
+    setObjectStatusFilter(newFilter);
   };
 
   const handleObjectClick = (object: ConstructionObject) => {
+    setSelectedObjectId(object.id);
+  };
+
+  const handleQuickAction = (object: ConstructionObject, action: 'material' | 'work' | 'payment' | 'edit' | 'open') => {
+    if (action === 'edit') {
+      setFormPage({ type: 'editObject', object });
+      return;
+    }
+    if (action === 'payment') {
+      setFormPage({ type: 'addTransaction', defaultType: 'income' });
+      return;
+    }
+    // The detailed page owns object-specific material and work editing.
     setSelectedObjectId(object.id);
   };
 
@@ -176,7 +130,18 @@ export function ObjectsPage() {
       {sortedObjects.length > 0 ? (
         <div className="px-4 space-y-3">
           {sortedObjects.map((object, index) => (
-            <ObjectCard key={object.id} object={object} index={index} onClick={() => handleObjectClick(object)} />
+            <ObjectCard
+              key={object.id}
+              object={object}
+              index={index}
+              financials={calculateObjectFinancials(
+                objectWorkItems.filter((item) => item.object_id === object.id),
+                objectMaterialItems.filter((item) => item.object_id === object.id),
+                transactions.filter((item) => item.object_id === object.id),
+              )}
+              onClick={() => handleObjectClick(object)}
+              onQuickAction={(action) => handleQuickAction(object, action)}
+            />
           ))}
         </div>
       ) : (

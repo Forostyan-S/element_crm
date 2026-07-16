@@ -12,6 +12,8 @@ import type {
   Purchase,
   ObjectHistoryEntry,
   TransactionType,
+  ObjectWorkItem,
+  ObjectMaterialItem,
 } from '../types';
 
 export type FormPageState =
@@ -43,6 +45,16 @@ interface AppState {
   addObject: (object: ConstructionObject) => void;
   updateObject: (id: string, updates: Partial<ConstructionObject>) => void;
   deleteObject: (id: string) => void;
+
+  objectWorkItems: ObjectWorkItem[];
+  addObjectWorkItem: (item: ObjectWorkItem) => void;
+  updateObjectWorkItem: (id: string, updates: Partial<ObjectWorkItem>) => void;
+  deleteObjectWorkItem: (id: string) => void;
+
+  objectMaterialItems: ObjectMaterialItem[];
+  addObjectMaterialItem: (item: ObjectMaterialItem) => void;
+  updateObjectMaterialItem: (id: string, updates: Partial<ObjectMaterialItem>) => void;
+  deleteObjectMaterialItem: (id: string) => void;
 
   clients: Client[];
   setClients: (clients: Client[]) => void;
@@ -174,6 +186,24 @@ export const useStore = create<AppState>((set) => ({
     })),
   deleteObject: (id) =>
     set((state) => ({ objects: state.objects.filter((obj) => obj.id !== id) })),
+
+  objectWorkItems: [],
+  addObjectWorkItem: (item) => set((state) => ({ objectWorkItems: [...state.objectWorkItems, item] })),
+  updateObjectWorkItem: (id, updates) => set((state) => ({
+    objectWorkItems: state.objectWorkItems.map((item) => item.id === id ? { ...item, ...updates } : item),
+  })),
+  deleteObjectWorkItem: (id) => set((state) => ({
+    objectWorkItems: state.objectWorkItems.filter((item) => item.id !== id),
+  })),
+
+  objectMaterialItems: [],
+  addObjectMaterialItem: (item) => set((state) => ({ objectMaterialItems: [...state.objectMaterialItems, item] })),
+  updateObjectMaterialItem: (id, updates) => set((state) => ({
+    objectMaterialItems: state.objectMaterialItems.map((item) => item.id === id ? { ...item, ...updates } : item),
+  })),
+  deleteObjectMaterialItem: (id) => set((state) => ({
+    objectMaterialItems: state.objectMaterialItems.filter((item) => item.id !== id),
+  })),
 
   clients: [],
   setClients: (clients) => set({ clients }),

@@ -121,15 +121,57 @@ export interface ConstructionObject {
   client_id: string;
   client?: Client;
   address: string;
+  /** Structured address fields are kept alongside the display-ready address. */
+  street?: string;
+  house?: string;
+  apartment?: string;
+  entrance?: string;
+  floor?: number;
+  object_number?: string;
+  object_type?: 'apartment' | 'house' | 'office' | 'shop' | 'commercial' | 'industrial';
+  area?: number;
+  rooms?: number;
   status: ObjectStatus;
+  /** Contract total. `budget` is retained for backwards compatibility. */
+  total_cost?: number;
   budget: number;
   spent: number;
   profit: number;
   progress: number;
   description?: string;
-  image_url?: string;
+  notes?: string;
   start_date?: string;
   end_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A priced work included in an object's estimate. */
+export interface ObjectWorkItem {
+  id: string;
+  object_id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+  status: 'planned' | 'in_progress' | 'completed';
+  date?: string;
+  comment?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A material allocated to an object. Prices are saved per line to preserve estimate history. */
+export interface ObjectMaterialItem {
+  id: string;
+  object_id: string;
+  material_id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  purchase_price: number;
+  sale_price: number;
+  markup: number;
   created_at: string;
   updated_at: string;
 }

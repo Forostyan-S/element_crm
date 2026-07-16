@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Check, Search, UserPlus, User as UserIcon, Phone } from 'lucide-react';
+import { ChevronRight, Check, Search, UserPlus, User as UserIcon } from 'lucide-react';
 import { useStore } from '../../store';
 import { FormPageShell, Field, Input, Textarea } from '../../ui';
 import { OBJECT_STATUS_LABELS } from '../../types';
@@ -32,7 +32,11 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
+  const [street, setStreet] = useState('');
+  const [house, setHouse] = useState('');
+  const [apartment, setApartment] = useState('');
+  const [entrance, setEntrance] = useState('');
+  const [objectNumber, setObjectNumber] = useState('');
   const [status, setStatus] = useState<ObjectStatus>('new');
   const [objectType, setObjectType] = useState<ObjectType>('apartment');
   const [area, setArea] = useState('');
@@ -55,11 +59,20 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
   useEffect(() => {
     if (editObject) {
       setName(editObject.name);
-      setAddress(editObject.address);
+      setStreet(editObject.street || editObject.address || '');
+      setHouse(editObject.house || '');
+      setApartment(editObject.apartment || '');
+      setEntrance(editObject.entrance || '');
+      setObjectNumber(editObject.object_number || '');
       setStatus(editObject.status);
+      setObjectType(editObject.object_type || 'apartment');
+      setArea(editObject.area !== undefined ? String(editObject.area) : '');
+      setFloor(editObject.floor !== undefined ? String(editObject.floor) : '');
+      setRooms(editObject.rooms !== undefined ? String(editObject.rooms) : '');
       setStartDate(editObject.start_date || '');
       setEndDate(editObject.end_date || '');
       setDescription(editObject.description || '');
+      setNotes(editObject.notes || '');
       if (editObject.client) {
         const existing = clients.find((c) => c.id === editObject.client_id);
         if (existing) {
@@ -86,7 +99,8 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
     const e: Record<string, string> = {};
     if (step === 0) {
       if (!name.trim()) e.name = 'Введите название объекта';
-      if (!address.trim()) e.address = 'Введите адрес';
+      if (!street.trim()) e.street = 'Введите улицу';
+      if (!house.trim()) e.house = 'Введите номер дома';
     }
     if (step === 1) {
       if (area && (isNaN(Number(area)) || Number(area) < 0)) e.area = 'Площадь должна быть числом';
@@ -136,17 +150,33 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
 
     const now = new Date().toISOString();
     const { clientId, client } = resolveClient();
+    const address = [street.trim(), house.trim() && `д. ${house.trim()}`, apartment.trim() && `кв. ${apartment.trim()}`]
+      .filter(Boolean)
+      .join(', ');
+    const objectFields = {
+      address,
+      street: street.trim() || undefined,
+      house: house.trim() || undefined,
+      apartment: apartment.trim() || undefined,
+      entrance: entrance.trim() || undefined,
+      object_number: objectNumber.trim() || undefined,
+      object_type: objectType,
+      area: area.trim() ? Number(area) : undefined,
+      floor: floor.trim() ? Number(floor) : undefined,
+      rooms: rooms.trim() ? Number(rooms) : undefined,
+      description: description.trim() || undefined,
+      notes: notes.trim() || undefined,
+    };
 
     if (isEdit && editObject) {
       updateObject(editObject.id, {
         name: name.trim(),
-        address: address.trim(),
+        ...objectFields,
         status,
         client_id: clientId,
         client,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
-        description: description.trim() || undefined,
         updated_at: now,
       });
     } else {
@@ -155,7 +185,7 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
         name: name.trim(),
         client_id: clientId,
         client,
-        address: address.trim(),
+        ...objectFields,
         status,
         budget: 0,
         spent: 0,
@@ -163,7 +193,6 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
         progress: 10,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
-        description: description.trim() || undefined,
         created_at: now,
         updated_at: now,
       };
@@ -257,9 +286,37 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
               <Field label="Название" required error={errors.name}>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Квартира Иванова" error={!!errors.name} />
               </Field>
-              <Field label="Адрес" required error={errors.address}>
-                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="ул. Ленина, 15, кв. 42" error={!!errors.address} />
-              </Field>
+              {isEdit && (
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Статус">
+                    <div className="rounded-xl px-3 py-2.5 text-sm text-muted" style={{ background: 'rgba(27, 33, 48, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      {OBJECT_STATUS_LABELS[status]}
+                    </div>
+                  </Field>
+                  <Field label="№ объекта">
+                    <Input value={objectNumber} onChange={(e) => setObjectNumber(e.target.value)} placeholder="А-001" />
+                  </Field>
+                </div>
+              )}
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-muted">Адрес</p>
+                <div className="grid grid-cols-[1fr_112px] gap-3">
+                  <Field label="Улица" required error={errors.street}>
+                    <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="ул. Ленина" error={!!errors.street} />
+                  </Field>
+                  <Field label="Дом" required error={errors.house}>
+                    <Input value={house} onChange={(e) => setHouse(e.target.value)} placeholder="15" error={!!errors.house} />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Квартира">
+                    <Input value={apartment} onChange={(e) => setApartment(e.target.value)} placeholder="42" />
+                  </Field>
+                  <Field label="Подъезд">
+                    <Input value={entrance} onChange={(e) => setEntrance(e.target.value)} placeholder="2" />
+                  </Field>
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-medium text-muted mb-2">
                   Тип объекта
@@ -305,6 +362,11 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
                   })}
                 </div>
               </Field>
+              {!isEdit && (
+                <Field label="№ объекта">
+                  <Input value={objectNumber} onChange={(e) => setObjectNumber(e.target.value)} placeholder="А-001" />
+                </Field>
+              )}
             </>
           )}
 

@@ -121,7 +121,7 @@ const EVENT_TYPES = [
 ];
 
 export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModalProps) {
-  const { deleteObject, setIsModalOpen, setFormPage } = useStore();
+  const { deleteObject, setIsModalOpen, setFormPage, objectWorkItems, objectMaterialItems, addObjectWorkItem, addObjectMaterialItem } = useStore();
 
   useEffect(() => {
     setIsModalOpen(isOpen);
@@ -131,11 +131,7 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Work items state
-  const [workItems, setWorkItems] = useState<WorkItem[]>([
-    { id: '1', name: 'Прокладка кабеля ВВГ 3x2.5', quantity: 50, unit: 'м', pricePerUnit: 150, total: 7500 },
-    { id: '2', name: 'Установка розеток', quantity: 8, unit: 'шт', pricePerUnit: 500, total: 4000 },
-  { id: '3', name: 'Сборка щита', quantity: 1, unit: 'шт', pricePerUnit: 5000, total: 5000 },
-  ]);
+  const [workItems, setWorkItems] = useState<WorkItem[]>([]);
   const [showAddWorkModal, setShowAddWorkModal] = useState(false);
   const [workInputType, setWorkInputType] = useState<'catalog' | 'manual'>('catalog');
   const [selectedCatalogWork, setSelectedCatalogWork] = useState<typeof WORK_CATALOG[0] | null>(null);
@@ -144,11 +140,7 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
   const [workPrice, setWorkPrice] = useState('');
 
   // Materials state
-  const [materials, setMaterials] = useState<ObjectMaterial[]>([
-    { id: '1', name: 'Кабель ВВГ 3x2.5', quantity: 50, unit: 'м', price: 85, date: '2024-01-15' },
-    { id: '2', name: 'Подрозетник', quantity: 12, unit: 'шт', price: 12, date: '2024-01-18' },
-    { id: '3', name: 'Автомат ABB 16A', quantity: 5, unit: 'шт', price: 850, date: '2024-01-20' },
-  ]);
+  const [materials, setMaterials] = useState<ObjectMaterial[]>([]);
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
   const [materialInputType, setMaterialInputType] = useState<'warehouse' | 'manual'>('warehouse');
   const [manualMaterialName, setManualMaterialName] = useState('');
@@ -172,6 +164,16 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
     { type: 'estimate', name: 'Смета', status: 'done' },
     { type: 'contract', name: 'Договор', status: 'in_progress' },
   ]);
+
+  useEffect(() => {
+    if (!object) return;
+    setWorkItems(objectWorkItems.filter((item) => item.object_id === object.id).map((item) => ({
+      id: item.id, name: item.name, quantity: item.quantity, unit: item.unit, pricePerUnit: item.price, total: item.quantity * item.price,
+    })));
+    setMaterials(objectMaterialItems.filter((item) => item.object_id === object.id).map((item) => ({
+      id: item.id, name: item.name, quantity: item.quantity, unit: item.unit, price: item.purchase_price, date: item.created_at,
+    })));
+  }, [object, objectWorkItems, objectMaterialItems]);
 
   const demoHistory = [
     { id: '1', action: 'Создан объект', date: '2024-01-08', user: 'Сергей' },
@@ -205,6 +207,7 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
       total: q * selectedCatalogWork.price,
     };
     setWorkItems(prev => [...prev, newItem]);
+    if (object) addObjectWorkItem({ id: newItem.id, object_id: object.id, name: newItem.name, quantity: newItem.quantity, unit: newItem.unit, price: newItem.pricePerUnit, status: 'planned', created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
     setSelectedCatalogWork(null);
     setWorkQuantity('');
     setShowAddWorkModal(false);
@@ -223,6 +226,7 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
       total: q * p,
     };
     setWorkItems(prev => [...prev, newItem]);
+    if (object) addObjectWorkItem({ id: newItem.id, object_id: object.id, name: newItem.name, quantity: newItem.quantity, unit: newItem.unit, price: newItem.pricePerUnit, status: 'planned', created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
     setManualWorkName('');
     setWorkQuantity('');
     setWorkPrice('');
@@ -243,6 +247,7 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
       date: new Date().toISOString().split('T')[0],
     };
     setMaterials(prev => [...prev, newItem]);
+    if (object) addObjectMaterialItem({ id: newItem.id, object_id: object.id, name: newItem.name, quantity: newItem.quantity, unit: newItem.unit, purchase_price: newItem.price, sale_price: newItem.price, markup: 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
     setManualMaterialName('');
     setMaterialQuantity('');
     setMaterialPrice('');
