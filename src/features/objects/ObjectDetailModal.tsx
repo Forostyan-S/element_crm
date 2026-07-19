@@ -851,6 +851,12 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
   );
 }
 
+interface CatalogWork {
+  name: string;
+  price: number;
+  unit: string;
+}
+
 // Add Work Modal Component
 function AddWorkModal({
   isOpen,
@@ -873,8 +879,8 @@ function AddWorkModal({
   onClose: () => void;
   inputType: 'catalog' | 'manual';
   setInputType: (v: 'catalog' | 'manual') => void;
-  selectedCatalogWork: typeof catalog[0] | null;
-  setSelectedCatalogWork: (v: typeof catalog[0] | null) => void;
+  selectedCatalogWork: CatalogWork | null;
+  setSelectedCatalogWork: (v: CatalogWork | null) => void;
   manualWorkName: string;
   setManualWorkName: (v: string) => void;
   workQuantity: string;
@@ -883,7 +889,7 @@ function AddWorkModal({
   setWorkPrice: (v: string) => void;
   onAddFromCatalog: () => void;
   onAddManual: () => void;
-  catalog: typeof catalog;
+  catalog: CatalogWork[];
 }) {
   if (!isOpen) return null;
 

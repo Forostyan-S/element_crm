@@ -5,7 +5,10 @@ import { useStore } from '../../store';
 import { EmptyState } from '../../ui';
 import { StatusFilter } from './StatusFilter';
 import { ObjectCard } from './ObjectCard';
+
 import { calculateObjectFinancials } from './objectFinancials';
+import { ObjectNumberModal } from './ObjectNumberModal';
+import { ObjectCommentModal } from './ObjectCommentModal';
 import type { ObjectStatus, ConstructionObject } from '../../types';
 
 type SortOption = 'new' | 'cost' | 'active' | 'completed';
@@ -23,6 +26,15 @@ export function ObjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('new');
   const [showSortMenu, setShowSortMenu] = useState(false);
+const [selectedObject, setSelectedObject] =
+  useState<ConstructionObject | null>(null);
+
+const [modalType, setModalType] =
+  useState<'number' | 'comment' | null>(null);
+
+
+
+
 
   const filteredObjects = objects.filter((obj) => {
     const matchesFilter = filter === 'all' || obj.status === filter;
@@ -59,20 +71,25 @@ export function ObjectsPage() {
     setSelectedObjectId(object.id);
   };
 
-  const handleQuickAction = (object: ConstructionObject, action: 'material' | 'work' | 'payment' | 'edit' | 'open') => {
-    if (action === 'edit') {
-      setFormPage({ type: 'editObject', object });
-      return;
-    }
-    if (action === 'payment') {
-      setFormPage({ type: 'addTransaction', defaultType: 'income' });
-      return;
-    }
-    // The detailed page owns object-specific material and work editing.
-    setSelectedObjectId(object.id);
-  };
+  
+
+  const openNumberModal = (object: ConstructionObject) => {
+  setSelectedObject(object);
+  setModalType('number');
+};
+
+const openCommentModal = (object: ConstructionObject) => {
+  setSelectedObject(object);
+  setModalType('comment');
+};
+
+const closeModal = () => {
+  setModalType(null);
+  setSelectedObject(null);
+};
 
   return (
+  <>
     <motion.div
       className="pb-6"
       initial={{ opacity: 0 }}
@@ -130,18 +147,20 @@ export function ObjectsPage() {
       {sortedObjects.length > 0 ? (
         <div className="px-4 space-y-3">
           {sortedObjects.map((object, index) => (
-            <ObjectCard
-              key={object.id}
-              object={object}
-              index={index}
-              financials={calculateObjectFinancials(
-                objectWorkItems.filter((item) => item.object_id === object.id),
-                objectMaterialItems.filter((item) => item.object_id === object.id),
-                transactions.filter((item) => item.object_id === object.id),
-              )}
-              onClick={() => handleObjectClick(object)}
-              onQuickAction={(action) => handleQuickAction(object, action)}
-            />
+           <ObjectCard
+  key={object.id}
+  object={object}
+  index={index}
+  financials={calculateObjectFinancials(
+    objectWorkItems.filter((item) => item.object_id === object.id),
+    objectMaterialItems.filter((item) => item.object_id === object.id),
+    transactions.filter((item) => item.object_id === object.id),
+  )}
+
+  onClick={() => handleObjectClick(object)}
+  onNumberClick={() => openNumberModal(object)}
+  onCommentClick={() => openCommentModal(object)}
+/>
           ))}
         </div>
       ) : (
@@ -157,6 +176,21 @@ export function ObjectsPage() {
           />
         </div>
       )}
-    </motion.div>
-  );
+        </motion.div>
+
+    {modalType === 'number' && selectedObject && (
+  <ObjectNumberModal
+    object={selectedObject}
+    onClose={closeModal}
+  />
+)}
+
+{modalType === 'comment' && selectedObject && (
+  <ObjectCommentModal
+    object={selectedObject}
+    onClose={closeModal}
+  />
+)}
+  </>
+);
 }

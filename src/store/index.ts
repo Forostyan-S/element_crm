@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { ObjectComment } from '../types/comments';
 import type {
   ConstructionObject,
   Transaction,
@@ -299,4 +300,7 @@ export const useStore = create<AppState>((set) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
   formPage: null,
   setFormPage: (page) => set({ formPage: page }),
+
+  
+
 }));

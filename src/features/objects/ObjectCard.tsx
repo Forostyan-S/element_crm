@@ -1,5 +1,10 @@
 import { motion } from 'framer-motion';
-import { MapPin, Wallet, UserRound, MessageSquare, Plus, Pencil, FolderOpen } from 'lucide-react';
+import {
+  MapPin,
+  Wallet,
+  UserRound,
+  MessageSquare,
+} from 'lucide-react';
 import {
   OBJECT_STATUS_LABELS,
   OBJECT_STATUS_COLORS,
@@ -13,8 +18,12 @@ interface ObjectCardProps {
   object: ConstructionObject;
   index?: number;
   onClick?: () => void;
+
+  onNumberClick?: () => void;
+  onCommentClick?: () => void;
+
   financials?: ObjectFinancials;
-  onQuickAction?: (action: 'material' | 'work' | 'payment' | 'edit' | 'open') => void;
+  
 }
 
 const fmt = (v: number) =>
@@ -25,7 +34,14 @@ const fmt = (v: number) =>
     maximumFractionDigits: 0,
   }).format(v);
 
-export function ObjectCard({ object, index = 0, onClick, financials, onQuickAction }: ObjectCardProps) {
+export function ObjectCard({
+  object,
+  index = 0,
+  onClick,
+  financials,
+  onNumberClick,
+  onCommentClick,
+}: ObjectCardProps){  
   const status = object.status as ObjectStatus;
   const color = OBJECT_STATUS_COLORS[status];
   const label = OBJECT_STATUS_LABELS[status];
@@ -35,12 +51,7 @@ export function ObjectCard({ object, index = 0, onClick, financials, onQuickActi
   const markup = financials?.markup ?? 0;
   const paid = financials?.paid ?? 0;
   const remaining = financials?.remaining ?? Math.max(0, totalCost - object.spent);
-  const clientInitials = object.client?.name
-    ?.split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  
 
   return (
     <motion.div
@@ -60,47 +71,58 @@ export function ObjectCard({ object, index = 0, onClick, financials, onQuickActi
       <div className="h-1 w-full" style={{ backgroundColor: color }} />
 
       <div className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold text-foreground truncate">{object.name}</h3>
-              <span
-                className="text-2xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
-                style={{ backgroundColor: `${color}25`, color }}
-              >
-                {label}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-muted-weak flex-shrink-0" />
-              <p className="text-xs text-muted truncate">{object.address}</p>
-            </div>
-          </div>
-        </div>
+       {/* Header */}
+<div className="flex items-start justify-between mb-3 gap-3">
+
+  <div className="flex-1 min-w-0">
+
+    <h3 className="text-sm font-semibold text-foreground truncate">
+      {object.name}
+    </h3>
+
+    <span
+      className="inline-flex mt-1 text-2xs font-semibold px-2 py-0.5 rounded"
+      style={{
+        backgroundColor: `${color}25`,
+        color,
+      }}
+    >
+      {label}
+    </span>
+
+  </div>
+
+  <button
+    type="button"
+    className="text-xs font-semibold text-muted hover:text-foreground transition-colors"
+    onClick={(e) => {
+      e.stopPropagation();
+      onNumberClick?.();
+    }}
+  >
+    {object.object_number || 'Без номера'}
+  </button>
+
+</div>
 
         <div className="flex items-center gap-1 mb-3">
           <MapPin className="w-3.5 h-3.5 text-muted-weak flex-shrink-0" />
           <p className="text-xs text-muted leading-5">{object.address}</p>
         </div>
 
-        {object.client ? (
-          <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 mb-3" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.16)' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: 'linear-gradient(135deg, #3B82F6, #6366F1)' }}>
-              {clientInitials || <UserRound className="w-4 h-4" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-2xs text-muted-weak">Клиент</p>
-              <p className="text-sm font-medium text-foreground truncate">{object.client.name}</p>
-            </div>
-            {object.client.phone && <p className="text-xs text-muted whitespace-nowrap">{object.client.phone}</p>}
-          </div>
-        ) : (
-          <div className="rounded-xl px-3 py-2.5 mb-3" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="text-2xs text-muted-weak">Клиент</p>
-            <p className="text-sm text-muted">Клиент не назначен</p>
-          </div>
-        )}
+        {object.client?.name && (
+  <div className="flex items-center gap-1 mb-3">
+    <UserRound className="w-3.5 h-3.5 text-muted-weak flex-shrink-0" />
+
+    <p className="text-xs text-muted truncate">
+      {object.client.name}
+    </p>
+  </div>
+)}
+
+    
+
+
 
         {/* Progress */}
         <div className="mb-3">
@@ -157,8 +179,19 @@ export function ObjectCard({ object, index = 0, onClick, financials, onQuickActi
 
         <button
           className="w-full text-left flex items-start gap-2 rounded-xl p-2.5 mb-3 transition-colors"
-          style={{ background: 'rgba(255,255,255,0.035)' }}
-          onClick={(event) => { event.stopPropagation(); onClick?.(); }}
+          style={{
+  background: object.hasNewComment
+    ? 'rgba(34,197,94,.18)'
+    : 'rgba(255,255,255,0.035)',
+
+  border: object.hasNewComment
+    ? '1px solid rgba(34,197,94,.5)'
+    : '1px solid rgba(255,255,255,.06)',
+}}
+          onClick={(event) => {
+  event.stopPropagation();
+  onCommentClick?.();
+}}
         >
           <MessageSquare className="w-3.5 h-3.5 text-accent mt-0.5 flex-shrink-0" />
           <div className="min-w-0">
@@ -167,27 +200,7 @@ export function ObjectCard({ object, index = 0, onClick, financials, onQuickActi
           </div>
         </button>
 
-        {onQuickAction && (
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border/60">
-            {[
-              { id: 'material' as const, label: 'Материал', icon: Plus },
-              { id: 'work' as const, label: 'Работа', icon: Plus },
-              { id: 'payment' as const, label: 'Платёж', icon: Wallet },
-              { id: 'edit' as const, label: 'Изменить', icon: Pencil },
-              { id: 'open' as const, label: 'Открыть', icon: FolderOpen },
-            ].map((action) => (
-              <button
-                key={action.id}
-                onClick={(event) => { event.stopPropagation(); onQuickAction(action.id); }}
-                className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-2xs font-medium text-muted hover:text-foreground"
-                style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <action.icon className="w-3.5 h-3.5" />
-                {action.label}
-              </button>
-            ))}
-          </div>
-        )}
+        
       </div>
     </motion.div>
   );

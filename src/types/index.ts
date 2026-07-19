@@ -139,6 +139,7 @@ export interface ConstructionObject {
   profit: number;
   progress: number;
   description?: string;
+  hasNewComment?: boolean;
   notes?: string;
   start_date?: string;
   end_date?: string;
