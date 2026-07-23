@@ -12,7 +12,7 @@ export function ObjectNumberModal({
   object,
   onClose,
 }: Props) {
-  const { updateObject } = useStore();
+  const { updateObject, addObjectHistoryEntry } = useStore();
 
   const [number, setNumber] = useState(
     object.object_number ?? ''
@@ -24,6 +24,13 @@ export function ObjectNumberModal({
   updateObject(object.id, {
     object_number: number,
     updated_at: new Date().toISOString(),
+  });
+  addObjectHistoryEntry({
+    id: Date.now().toString(),
+    object_id: object.id,
+    action_type: 'number_updated',
+    description: `Номер объекта изменён на ${number || 'без номера'}`,
+    created_at: new Date().toISOString(),
   });
 
   onClose();

@@ -9,7 +9,6 @@ import {
   Users,
   ArrowUpRight,
   ArrowDownRight,
-  Filter,
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { EmptyState } from '../../ui';

@@ -23,8 +23,6 @@ export function BackupPage({ onBack, onShowToast }: BackupPageProps) {
   const handleRestore = () => onShowToast?.('Восстановление из резервной копии...');
   const handleDownload = () => onShowToast?.('Скачивание резервной копии...');
 
-  const inputStyle = { background: '#222938', border: '1px solid rgba(255,255,255,0.1)', color: '#F1F5F9' } as const;
-
   return (
     <FormPageShell title="Резервное копирование" onBack={onBack}>
       <div className="space-y-5">

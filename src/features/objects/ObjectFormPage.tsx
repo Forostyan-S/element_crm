@@ -28,7 +28,7 @@ export type ObjectType = typeof OBJECT_TYPES[number]['value'];
 const TOTAL_STEPS = 4;
 
 export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPageProps) {
-  const { addObject, updateObject, deleteObject, clients, addClient } = useStore();
+  const { addObject, updateObject, deleteObject, clients, addClient, addObjectHistoryEntry } = useStore();
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
@@ -179,6 +179,13 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
         end_date: endDate || undefined,
         updated_at: now,
       });
+      addObjectHistoryEntry({
+        id: Date.now().toString(),
+        object_id: editObject.id,
+        action_type: 'object_updated',
+        description: 'Объект отредактирован',
+        created_at: now,
+      });
     } else {
       const newObject: ConstructionObject = {
         id: Date.now().toString(),
@@ -197,6 +204,13 @@ export function ObjectFormPage({ editObject, onBack, onSaved }: ObjectFormPagePr
         updated_at: now,
       };
       addObject(newObject);
+      addObjectHistoryEntry({
+        id: Date.now().toString(),
+        object_id: newObject.id,
+        action_type: 'object_created',
+        description: 'Объект создан',
+        created_at: now,
+      });
     }
     onSaved?.();
     onBack();

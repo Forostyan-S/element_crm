@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, LayoutGrid, List, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { useStore } from '../../store';
 import { EmptyState } from '../../ui';
 import { EventCard } from './EventCard';
 import type { CalendarEvent, EventType } from '../../types';
-import { EVENT_TYPE_COLORS, EVENT_TYPE_LABELS } from '../../types';
+import { EVENT_TYPE_COLORS } from '../../types';
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const MONTHS = [

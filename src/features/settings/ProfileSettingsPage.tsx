@@ -18,7 +18,6 @@ export function ProfileSettingsPage({ onBack, onSaved }: ProfileSettingsPageProp
   const [companyName, setCompanyName] = useState(user?.company || '');
   const [city, setCity] = useState(user?.city || '');
   const [address, setAddress] = useState(user?.address || '');
-  const [darkTheme, setDarkTheme] = useState(true);
   const [textSize, setTextSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [vibration, setVibration] = useState(true);
 

@@ -58,7 +58,8 @@ export type EventType =
   | 'purchase'
   | 'delivery'
   | 'call'
-  | 'reminder';
+  | 'reminder'
+  | 'handover';
 
 export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   measurement: 'Замер',
@@ -68,6 +69,7 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   delivery: 'Доставка',
   call: 'Созвон',
   reminder: 'Напоминание',
+  handover: 'Сдача',
 };
 
 export const EVENT_TYPE_COLORS: Record<EventType, string> = {
@@ -78,6 +80,7 @@ export const EVENT_TYPE_COLORS: Record<EventType, string> = {
   delivery: '#10B981',
   call: '#06B6D4',
   reminder: '#EF4444',
+  handover: '#A855F7',
 };
 
 // Transaction Types

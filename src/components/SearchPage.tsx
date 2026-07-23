@@ -8,7 +8,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useStore } from '../store';
-import type { ConstructionObject, CalendarEvent, Transaction } from '../../types';
+import type { ConstructionObject, CalendarEvent, Transaction } from '../types';
 import { zIndex } from '../utils/zIndex';
 
 interface SearchPageProps {

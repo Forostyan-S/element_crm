@@ -8,7 +8,7 @@ interface RecentObjectsProps {
   onObjectClick?: (objectId: string) => void;
 }
 
-export function RecentObjects({ objects, onObjectClick }: RecentObjectsProps) {
+export function RecentObjects({ objects, onObjectClick: _onObjectClick }: RecentObjectsProps) {
   const { setActiveTab, setSelectedObjectId } = useStore();
 
   if (objects.length === 0) return null;

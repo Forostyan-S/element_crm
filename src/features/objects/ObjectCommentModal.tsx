@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { ConstructionObject } from '../../types';
 import { useStore } from '../../store';
+import { zIndex } from '../../utils/zIndex';
 
 interface Props {
   object: ConstructionObject;
@@ -12,7 +13,7 @@ export function ObjectCommentModal({
   object,
   onClose,
 }: Props) {
-  const { updateObject } = useStore();
+  const { updateObject, addObjectHistoryEntry } = useStore();
 
   const [comment, setComment] = useState(
   object.description ?? ''
@@ -24,14 +25,22 @@ const handleSave = () => {
     hasNewComment: true,
     updated_at: new Date().toISOString(),
   });
+  addObjectHistoryEntry({
+    id: Date.now().toString(),
+    object_id: object.id,
+    action_type: 'comment_updated',
+    description: 'Комментарий обновлён',
+    created_at: new Date().toISOString(),
+  });
 
   onClose();
 };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 flex items-center justify-center"
       style={{
         background: 'rgba(0,0,0,.55)',
+        zIndex: zIndex.dialog,
       }}
       onClick={onClose}
     >

@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import type { ObjectComment } from '../types/comments';
 import type {
   ConstructionObject,
   Transaction,

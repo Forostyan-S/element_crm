@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import type { CalendarEvent, EventType } from '../../types';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_COLORS } from '../../types';
-import { Clock, MapPin } from 'lucide-react';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -12,13 +11,6 @@ interface EventCardProps {
 export function EventCard({ event, index = 0, onClick }: EventCardProps) {
   const eventColor = EVENT_TYPE_COLORS[event.type as EventType];
   const eventLabel = EVENT_TYPE_LABELS[event.type as EventType];
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   return (
     <motion.div

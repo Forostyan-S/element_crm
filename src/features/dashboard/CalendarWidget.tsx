@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CalendarDays, Clock, MapPin } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import type { CalendarEvent, EventType } from '../../types';
 import { EVENT_TYPE_COLORS, EVENT_TYPE_LABELS } from '../../types';
 

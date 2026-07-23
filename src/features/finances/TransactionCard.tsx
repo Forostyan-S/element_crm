@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, ShoppingBag, Car, Users, MoreHorizontal, Pencil, Trash2, X } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, ShoppingBag, Car, Users, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Transaction, TransactionCategory } from '../../types';
 import { TRANSACTION_CATEGORY_LABELS } from '../../types';
 import { useStore } from '../../store';

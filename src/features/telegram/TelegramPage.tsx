@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Send, Eye, EyeOff, CheckCircle, XCircle, Bell, BellOff, MessageSquare, Info } from 'lucide-react';
+import { Send, Eye, EyeOff, CheckCircle, XCircle, MessageSquare, Info } from 'lucide-react';
 import { useStore } from '../../store';
 
 const NOTIFICATION_TYPES = [
