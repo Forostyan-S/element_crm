@@ -14,6 +14,7 @@ import type {
   TransactionType,
   ObjectWorkItem,
   ObjectMaterialItem,
+  ServiceCatalogItem,
 } from '../types';
 
 export type FormPageState =
@@ -96,6 +97,12 @@ interface AppState {
   objectHistory: ObjectHistoryEntry[];
   setObjectHistory: (history: ObjectHistoryEntry[]) => void;
   addObjectHistoryEntry: (entry: ObjectHistoryEntry) => void;
+
+  serviceCatalog: ServiceCatalogItem[];
+  setServiceCatalog: (services: ServiceCatalogItem[]) => void;
+  addServiceCatalogItem: (item: ServiceCatalogItem) => void;
+  updateServiceCatalogItem: (id: string, updates: Partial<ServiceCatalogItem>) => void;
+  deleteServiceCatalogItem: (id: string) => void;
 
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -273,6 +280,16 @@ export const useStore = create<AppState>((set) => ({
   setObjectHistory: (history) => set({ objectHistory: history }),
   addObjectHistoryEntry: (entry) =>
     set((state) => ({ objectHistory: [...state.objectHistory, entry] })),
+
+  serviceCatalog: [],
+  setServiceCatalog: (services) => set({ serviceCatalog: services }),
+  addServiceCatalogItem: (item) => set((state) => ({ serviceCatalog: [...state.serviceCatalog, item] })),
+  updateServiceCatalogItem: (id, updates) => set((state) => ({
+    serviceCatalog: state.serviceCatalog.map((service) => (service.id === id ? { ...service, ...updates } : service)),
+  })),
+  deleteServiceCatalogItem: (id) => set((state) => ({
+    serviceCatalog: state.serviceCatalog.filter((service) => service.id !== id),
+  })),
 
   isLoading: false,
   setIsLoading: (loading) => set({ isLoading: loading }),

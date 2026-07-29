@@ -165,6 +165,17 @@ export interface ObjectWorkItem {
   updated_at: string;
 }
 
+export interface ServiceCatalogItem {
+  id: string;
+  name: string;
+  category: string;
+  unit: string;
+  price: number;
+  description?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 /** A material allocated to an object. Prices are saved per line to preserve estimate history. */
 export interface ObjectMaterialItem {
   id: string;

@@ -1,38 +1,31 @@
 import { useState } from 'react';
 import { Search, Plus, Pencil, Trash2, Hammer, Check } from 'lucide-react';
 import { FormPageShell } from '../../ui';
+import { useStore } from '../../store';
+import type { ServiceCatalogItem } from '../../types';
 
 interface ServiceCatalogPageProps {
   onBack: () => void;
   onShowToast?: (msg: string) => void;
 }
 
-interface Service {
-  id: string;
-  name: string;
-  category: string;
-  unit: string;
-  price: number;
-  description?: string;
-}
-
-const defaultServices: Service[] = [
-  { id: '1', name: 'Монтаж розетки', category: 'Электромонтаж', unit: 'шт', price: 450, description: 'Установка внутренней розетки' },
-  { id: '2', name: 'Прокладка кабеля', category: 'Электромонтаж', unit: 'м', price: 80, description: 'ВВГ 3×2.5 в гофре' },
-  { id: '3', name: 'Установка автомата', category: 'Щитовое оборудование', unit: 'шт', price: 350 },
-  { id: '4', name: 'Сборка электрощита', category: 'Щитовое оборудование', unit: 'шт', price: 5000, description: 'До 12 модулей' },
-  { id: '5', name: 'Монтаж светильника', category: 'Освещение', unit: 'шт', price: 600 },
-  { id: '6', name: 'Замер сопротивления', category: 'Проверка', unit: 'точка', price: 250 },
+const defaultServices: ServiceCatalogItem[] = [
+  { id: '1', name: 'Монтаж розетки', category: 'Электромонтаж', unit: 'шт', price: 450, description: 'Установка внутренней розетки', created_at: new Date().toISOString() },
+  { id: '2', name: 'Прокладка кабеля', category: 'Электромонтаж', unit: 'м', price: 80, description: 'ВВГ 3×2.5 в гофре', created_at: new Date().toISOString() },
+  { id: '3', name: 'Установка автомата', category: 'Щитовое оборудование', unit: 'шт', price: 350, created_at: new Date().toISOString() },
+  { id: '4', name: 'Сборка электрощита', category: 'Щитовое оборудование', unit: 'шт', price: 5000, description: 'До 12 модулей', created_at: new Date().toISOString() },
+  { id: '5', name: 'Монтаж светильника', category: 'Освещение', unit: 'шт', price: 600, created_at: new Date().toISOString() },
+  { id: '6', name: 'Замер сопротивления', category: 'Проверка', unit: 'точка', price: 250, created_at: new Date().toISOString() },
 ];
 
 const CATEGORIES = ['Электромонтаж', 'Щитовое оборудование', 'Освещение', 'Проверка', 'Монтаж', 'Прочее'];
 const UNITS = ['шт', 'м', 'м²', 'м³', 'кг', 'л', 'точка', 'компл'];
 
 export function ServiceCatalogPage({ onBack, onShowToast }: ServiceCatalogPageProps) {
-  const [services, setServices] = useState<Service[]>(defaultServices);
+  const { serviceCatalog, addServiceCatalogItem, updateServiceCatalogItem, deleteServiceCatalogItem } = useStore();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editService, setEditService] = useState<Service | null>(null);
+  const [editService, setEditService] = useState<ServiceCatalogItem | null>(null);
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState(CATEGORIES[0]);
   const [formUnit, setFormUnit] = useState(UNITS[0]);
@@ -40,6 +33,7 @@ export function ServiceCatalogPage({ onBack, onShowToast }: ServiceCatalogPagePr
   const [formDescription, setFormDescription] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  const services = serviceCatalog.length > 0 ? serviceCatalog : defaultServices;
   const filtered = services.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
 
   const openAdd = () => {
@@ -52,7 +46,7 @@ export function ServiceCatalogPage({ onBack, onShowToast }: ServiceCatalogPagePr
     setShowForm(true);
   };
 
-  const openEdit = (s: Service) => {
+  const openEdit = (s: ServiceCatalogItem) => {
     setEditService(s);
     setFormName(s.name);
     setFormCategory(s.category);
@@ -66,17 +60,17 @@ export function ServiceCatalogPage({ onBack, onShowToast }: ServiceCatalogPagePr
     if (!formName.trim() || !formPrice) return;
     const price = Number(formPrice);
     if (editService) {
-      setServices(services.map((s) => s.id === editService.id ? { ...s, name: formName, category: formCategory, unit: formUnit, price, description: formDescription } : s));
+      updateServiceCatalogItem(editService.id, { name: formName.trim(), category: formCategory, unit: formUnit, price, description: formDescription, updated_at: new Date().toISOString() });
       onShowToast?.('Услуга обновлена');
     } else {
-      setServices([...services, { id: Date.now().toString(), name: formName, category: formCategory, unit: formUnit, price, description: formDescription }]);
+      addServiceCatalogItem({ id: Date.now().toString(), name: formName.trim(), category: formCategory, unit: formUnit, price, description: formDescription, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
       onShowToast?.('Услуга добавлена');
     }
     setShowForm(false);
   };
 
   const handleDelete = (id: string) => {
-    setServices(services.filter((s) => s.id !== id));
+    deleteServiceCatalogItem(id);
     setConfirmDelete(null);
     onShowToast?.('Услуга удалена');
   };

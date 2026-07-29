@@ -38,9 +38,11 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
   const [showAddWorkModal, setShowAddWorkModal] = useState(false);
   const [workInputType, setWorkInputType] = useState<'catalog' | 'manual'>('catalog');
   const [selectedCatalogWork, setSelectedCatalogWork] = useState<CatalogWork | null>(null);
+  const [selectedWorkCategory, setSelectedWorkCategory] = useState('Электромонтаж');
   const [manualWorkName, setManualWorkName] = useState('');
   const [workQuantity, setWorkQuantity] = useState('');
   const [workPrice, setWorkPrice] = useState('');
+  const [saveToCatalog, setSaveToCatalog] = useState(false);
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
   const [materialInputType, setMaterialInputType] = useState<'warehouse' | 'manual'>('warehouse');
   const [manualMaterialName, setManualMaterialName] = useState('');
@@ -415,6 +417,10 @@ export function ObjectDetailModal({ isOpen, onClose, object }: ObjectDetailModal
             setWorkQuantity={setWorkQuantity}
             workPrice={workPrice}
             setWorkPrice={setWorkPrice}
+            selectedCategory={selectedWorkCategory}
+            setSelectedCategory={setSelectedWorkCategory}
+            saveToCatalog={saveToCatalog}
+            setSaveToCatalog={setSaveToCatalog}
             onAddFromCatalog={handleAddWorkFromCatalog}
             onAddManual={handleAddWorkManual}
           />

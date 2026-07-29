@@ -29,12 +29,16 @@ export const FILE_TYPES: Array<{ type: ObjectFileItem['type']; name: string }> =
 ];
 
 export const WORK_CATALOG = [
-  { name: 'Прокладка кабеля', unit: 'м', price: 150 },
-  { name: 'Установка розетки', unit: 'шт', price: 500 },
-  { name: 'Установка выключателя', unit: 'шт', price: 450 },
-  { name: 'Монтаж распределительной коробки', unit: 'шт', price: 800 },
-  { name: 'Сборка щита', unit: 'шт', price: 5000 },
-  { name: 'Установка автомата', unit: 'шт', price: 350 },
+  { id: 'electrical-cable', category: 'Электромонтаж', name: 'Прокладка кабеля', unit: 'м', price: 150 },
+  { id: 'electrical-socket', category: 'Электромонтаж', name: 'Установка розетки', unit: 'шт', price: 500 },
+  { id: 'electrical-switch', category: 'Электромонтаж', name: 'Установка выключателя', unit: 'шт', price: 450 },
+  { id: 'electrical-jbox', category: 'Электромонтаж', name: 'Монтаж распределительной коробки', unit: 'шт', price: 800 },
+  { id: 'panel-board', category: 'Щиты', name: 'Сборка щита', unit: 'шт', price: 5000 },
+  { id: 'panel-automatic', category: 'Щиты', name: 'Установка автомата', unit: 'шт', price: 350 },
+  { id: 'lighting-fixture', category: 'Освещение', name: 'Монтаж светильника', unit: 'шт', price: 600 },
+  { id: 'lighting-led', category: 'Освещение', name: 'Монтаж LED-ленты', unit: 'м', price: 220 },
+  { id: 'low-current-internet', category: 'Слаботочка', name: 'Настройка интернета', unit: 'точка', price: 1200 },
+  { id: 'low-current-domofon', category: 'Слаботочка', name: 'Монтаж домофона', unit: 'шт', price: 1800 },
 ];
 
 export const EVENT_TYPES: Array<{ value: EventType; label: string; color: string }> = [
